@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv, find_dotenv
-from pythecamp import TheCampClient
+from pythecamp import TheCampClient, LetterInfo
 
 
 load_dotenv(find_dotenv(), encoding='utf-8')
@@ -23,17 +23,10 @@ def send_message(title: str, content: str) -> None:
     client = TheCampClient()
     email = get_env_variable('DONTCRY_EMAIL')
     pw = get_env_variable('DONTCRY_PW')
+    trainee_id = get_env_variable('DONTCRY_TRAINEE_ID')
     client.login(email, pw)
-    groups = client.get_group_list()
-    trainees = client.get_trainee(groups[0]['group_id'])
-    client.write_letter(
-        title=title,
-        content=content,
-        unit_code=groups[0]['unit_code'],
-        group_id=groups[0]['group_id'],
-        name=trainees['trainee_name'],
-        birth_date=trainees['birth'],
-        relationship=trainees['relationship'])
+    letter_info = LetterInfo(title, content, trainee_id)
+    client.write_letter(letter_info)
     client.logout()
 
 

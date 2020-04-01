@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .pythecamp import TheCampClient
+from .pythecamp import TheCampClient, LetterInfo
 
 __author__ = """Youngmin Koo"""
 __email__ = 'youngminz.kr@gmail.com'

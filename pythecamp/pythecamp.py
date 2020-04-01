@@ -1,9 +1,19 @@
-import json
 import logging
 
 import requests
 
 logger = logging.getLogger('pythecamp')
+
+
+class LetterInfo:
+    content = None
+    subject = None
+    trainee_msg_seq = None
+
+    def __init__(self, content, subject, trainee_msg_seq=792934):
+        self.content = "<p>" + content + "</p>"
+        self.subject = subject
+        self.trainee_msg_seq = trainee_msg_seq
 
 
 def build_session() -> requests.Session:
@@ -28,61 +38,45 @@ class TheCampRequestError(Exception):
 
 class TheCampClient:
     API_HOST = 'https://www.thecamp.or.kr'
+    LOGIN_PATH = "/login/loginA.do"
+    SEND_LETTER_PATH = "/consolLetter/insertConsolLetterA.do"
+    CONTENT_TYPE = "application/x-www-form-urlencoded; charset=UTF-8"
+    REFERER = "https://www.thecamp.or.kr/consolLetter/viewConsolLetterInsert.do"
 
     def __init__(self):
         self.session = build_session()
 
     def _request(self, endpoint: str, data: dict) -> dict:
         without_credential = data.copy()
-        if 'user-pwd' in without_credential:
-            without_credential['user-pwd'] = '********'
+        if 'userPwd' in without_credential:
+            without_credential['userPwd'] = '********'
         print(f'REQUEST {endpoint} with data {without_credential}')
-        res = self.session.post(f'{self.API_HOST}{endpoint}', json=data)
+        res = self.session.post(f'{self.API_HOST}{endpoint}', data=data)
 
-        if res.json()['resultCode'] != 200:
+        if res.json()['resultCd'] != "0000":
             raise TheCampRequestError(f'TheCamp 응답 코드가 예상 응답 코드와 다릅니다. {res.text}')
 
         return res.json()
 
     def login(self, username: str, password: str) -> None:
         print(f'로그인을 시도합니다. username: {username}')
-        self._request('/pcws/common/login.do', {'subsType': '1', 'user-id': username, 'user-pwd': password})
+        self._request(self.LOGIN_PATH, {
+            'state': 'email-login', 'autoLoginYn': 'N', 'userId': username, 'userPwd': password
+        })
         print('로그인에 성공하였습니다.')
-
-    def get_group_list(self) -> dict:
-        print('가입 카페 목록을 가져옵니다.')
-        res = self._request('/pcws/troop/group/getMyGroupList.do', {})
-        print(f"가입 카페 목록을 가져왔습니다.")
-        return json.loads(res['resultData']['list2'])['my_group']
-
-    def get_trainee(self, group_id: str) -> dict:
-        print(f'그룹 {group_id}의 훈련생을 조회합니다.')
-        res = self._request('/pcws/camppack/getList.do', {'group_id': group_id})
-        print(f'그룹 {group_id}의 훈련생을 가져왔습니다.')
-        # 리스트를 조회하는데 결과로 리스트가 안 내려오는 건 좀 이상하다..
-        return json.loads(res['resultData']['data'])['trainee_info']
 
     def write_letter(
         self,
-        title: str,
-        content: str,
-        unit_code: str,
-        group_id: str,
-        name: str,
-        birth_date: str,
-        relationship: str
+        letter_info: LetterInfo,
     ) -> None:
 
         print(f'편지를 씁니다.')
-        self._request('/pcws/message/letter/insert.do', {
-            'unit_code': unit_code,
-            'group_id': group_id,
-            'trainee_name': name,
-            'birth': int(birth_date),
-            'relationship': relationship,
-            'fileInfo': [],
-            'title': title,
-            'content': content,
+        self._request(self.SEND_LETTER_PATH, {
+            'boardDiv': 'sympathyLetter',
+            'tempSaveYn': 'N',
+            'traineeMgrSeq': letter_info.trainee_msg_seq,
+            'sympathyLetterContent': letter_info.content,
+            'sympathyLetterSubject': letter_info.subject,
         })
         print('편지 쓰기 완료!')
 
