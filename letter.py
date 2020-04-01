@@ -25,7 +25,7 @@ def send_message(title: str, content: str) -> None:
     pw = get_env_variable('DONTCRY_PW')
     trainee_id = get_env_variable('DONTCRY_TRAINEE_ID')
     client.login(email, pw)
-    letter_info = LetterInfo(title, content, trainee_id)
+    letter_info = LetterInfo(content, title, trainee_id)
     client.write_letter(letter_info)
 
 
