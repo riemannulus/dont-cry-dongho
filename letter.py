@@ -38,7 +38,7 @@ def chunk_and_send_message(title: str, content: str) -> None:
 
     if len(title) > 15:
         title = title[:15] + '...'
-
+    content = '제목[ ' + title + '] ' + content
     for index, chunk in enumerate(range(0, len(content), 1500)):
         msg_chunked = content[chunk:chunk + 1500]
         msg_chunked = msg_chunked
