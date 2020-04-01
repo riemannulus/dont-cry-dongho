@@ -79,8 +79,3 @@ class TheCampClient:
             'sympathyLetterSubject': letter_info.subject,
         })
         print('편지 쓰기 완료!')
-
-    def logout(self) -> None:
-        print('로그아웃을 시도합니다.')
-        self.session.get(f'{self.API_HOST}/pcws/common/logout.do', allow_redirects=False)
-        print('로그아웃 성공!')

@@ -27,7 +27,6 @@ def send_message(title: str, content: str) -> None:
     client.login(email, pw)
     letter_info = LetterInfo(title, content, trainee_id)
     client.write_letter(letter_info)
-    client.logout()
 
 
 def chunk_and_send_message(title: str, content: str) -> None:
